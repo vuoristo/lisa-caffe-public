@@ -12,12 +12,12 @@ function create_flow_images_LRCN(base, save_base)
     mkdir(save_base)
   end
   
-  for i = 1:length(list)
+  parfor i = 1:length(list)
     if mod(i,100) == 0
       fprintf('On item %d of %d\n', i, length(list))
     end
   
-    video = list{i};
+    video = char(list{i});
   
   
     frames = clean_dir(sprintf('%s/%s',base,video));
@@ -26,9 +26,9 @@ function create_flow_images_LRCN(base, save_base)
       if ~isdir(sprintf('%s/%s',save_base, video))
         mkdir(sprintf('%s/%s',save_base, video))
       end
-      im1 = imread(sprintf('%s/%s/%s',base,video,frames{1}));
+      im1 = imread(sprintf('%s/%s/%s',base,video,char(frames{1})));
       for k = 2:length(frames)
-        im2 = imread(sprintf('%s/%s/%s',base,video,frames{k}));
+        im2 = imread(sprintf('%s/%s/%s',base,video,char(frames{k})));
         flow = mex_OF(double(im1),double(im2));
       
         scale = 16;
@@ -43,7 +43,7 @@ function create_flow_images_LRCN(base, save_base)
         flow_image(:,:,1:2) = flow;
         flow_image(:,:,3) = mag;
       
-        imwrite(flow_image./255,sprintf('%s/%s/flow_image_%s',save_base,video,frames{k}))
+        imwrite(flow_image./255,sprintf('%s/%s/flow_image_%s',save_base,video,char(frames{k})))
       
         im1 = im2;
       end
@@ -53,10 +53,11 @@ function create_flow_images_LRCN(base, save_base)
 function files = clean_dir(base)
   %clean_dir just runs dir and eliminates files in a foldr
   files = dir(base);
+  files = {files.name};
   files_tmp = {};
   for i = 1:length(files)
-    if strncmpi(files(i).name, '.',1) == 0
-      files_tmp{length(files_tmp)+1} = files(i).name;
+    if strncmpi(files(i), '.',1) == 0
+      files_tmp{length(files_tmp)+1} = files(i);
     end
   end
   files = files_tmp; 
